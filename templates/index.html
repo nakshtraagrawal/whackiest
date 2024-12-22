@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Campus Navigator</title>
+    <title>NavRIT</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
@@ -12,6 +13,16 @@
             --accent-color: #e76f51;
             --background-color: #f8f9fa;
             --card-color: #ffffff;
+            --text-color: #333333;
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #3db4a4;
+            --secondary-color: #a0b4be;
+            --accent-color: #e76f51;
+            --background-color: #1a1a1a;
+            --card-color: #2d2d2d;
+            --text-color: #ffffff;
         }
 
         * {
@@ -28,13 +39,46 @@
             flex-direction: column;
             align-items: center;
             padding: 2rem;
+            color: var(--text-color);
+            transition: all 0.3s ease;
         }
 
         .header {
             text-align: center;
             margin-bottom: 2rem;
-            color: var(--secondary-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
         }
+
+        /* Theme Toggle Styles */
+.theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    cursor: pointer;
+    background: var(--card-color);
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.1);
+}
+
+.theme-toggle i {
+    font-size: 1.2rem;
+    color: var(--text-color);
+}
+
 
         .content-wrapper {
             display: flex;
@@ -52,12 +96,37 @@
         }
 
         .map-container {
-            flex: 2;
-            background-color: var(--card-color);
-            padding: 2rem;
-            border-radius: 15px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
+    flex: 2;
+    background-color: var(--card-color);
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    min-height: 600px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Ensure content stays within bounds */
+    position: relative;
+}
+
+/* Ensure SVG is responsive */
+/* Ensure SVG is responsive */
+.map-svg {
+    width: 100%;
+    height: 600px; /* Adjust height for desktop */
+    display: block;
+}
+
+@media (max-width: 768px) {
+    .map-container {
+        min-height: 400px; /* Ensure there's enough space for the map */
+    }
+
+    .map-svg {
+        height: 400px; /* Adjust height for mobile */
+    }
+}
+
+
 
         .input-group {
             margin-bottom: 1.5rem;
@@ -67,7 +136,7 @@
         .input-group i {
             position: absolute;
             left: 1rem;
-            top: 50%;
+            top: 68%;
             transform: translateY(-50%);
             color: var(--primary-color);
         }
@@ -75,7 +144,7 @@
         label {
             display: block;
             margin-bottom: 0.5rem;
-            color: var(--secondary-color);
+            color: var(--text-color);
             font-weight: 600;
         }
 
@@ -87,7 +156,8 @@
             font-size: 1rem;
             transition: all 0.3s ease;
             appearance: none;
-            background: #fff url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%232a9d8f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 1rem center;
+            background: var(--card-color) url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%232a9d8f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 1rem center;
+            color: var(--text-color);
         }
 
         select:focus {
@@ -122,44 +192,132 @@
             margin-top: 2rem;
             padding: 1.5rem;
             border-radius: 8px;
-            background-color: #f8f9fa;
-            border: 2px solid #e0e0e0;
+            background-color: var(--background-color);
+            border: 2px solid var(--primary-color);
+            max-height: 400px;
+            overflow-y: auto;
         }
 
-        /* SVG Map Styles */
+        /* Ensure SVG is responsive */
         .map-svg {
-            width: 100%;
-            height: 500px;
-            background-color: #f8f9fa;
-            border-radius: 8px;
-        }
+    width: 100%;
+    height: 600px; /* Adjust height for desktop */
+    display: block;
+}
+
+@media (max-width: 768px) {
+    .map-container {
+        min-height: 400px; /* Ensure there's enough space for the map */
+    }
+
+    .map-svg {
+        height: 400px; /* Adjust height for mobile */
+    }
+}
+
+
 
         .room-node {
-            fill: var(--secondary-color);
+            fill: var(--primary-color);
             r: 8;
             transition: all 0.3s ease;
+            opacity: 0.7;
         }
 
-        .room-node:hover {
+        .room-node.active {
             fill: var(--accent-color);
             r: 10;
+            opacity: 1;
         }
 
         .room-label {
             font-size: 12px;
-            fill: var(--secondary-color);
+            fill: var(--text-color);
+            opacity: 0.7;
+        }
+
+        .room-label.active {
+            opacity: 1;
+            font-weight: bold;
         }
 
         .path-line {
-            stroke: #ccc;
-            stroke-width: 2;
-        }
-
-        .highlighted-path {
             stroke: var(--accent-color);
             stroke-width: 3;
             stroke-dasharray: 5;
             animation: dash 1s linear infinite;
+        }
+        .temperature-widget {
+    position: fixed;
+    top: 20px;
+    right: 100px; /* Position next to theme toggle */
+    background-color: var(--card-color);
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+    cursor: default;
+}
+
+.temperature-widget:hover {
+    transform: scale(1.1);
+}
+
+.temperature-value {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+}
+
+.temperature-value i {
+    margin-right: 5px;
+    color: var(--primary-color);
+}
+        .temperature-container {
+    background-color: var(--card-color);
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.temperature-container h2 {
+    margin-bottom: 1rem;
+    color: var(--text-color);
+}
+
+        .direction-step {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.5rem;
+            border-bottom: 1px solid var(--primary-color);
+            color: var(--text-color);
+        }
+
+        .step-number {
+            background-color: var(--primary-color);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .step-icon {
+            color: var(--primary-color);
+            font-size: 1.2rem;
         }
 
         @keyframes dash {
@@ -168,32 +326,58 @@
             }
         }
 
-        .legend {
-            margin-top: 1rem;
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-        }
+        @media (max-width: 1024px) {
+            .content-wrapper {
+                flex-direction: column;
+            }
 
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.9rem;
-            color: var(--secondary-color);
+            .controls-container, .map-container {
+                width: 100%;
+            }
         }
+        .search-select-container {
+        position: relative;
+        width: 100%;
+    }
 
-        .legend-color {
-            width: 20px;
-            height: 3px;
-            border-radius: 3px;
-        }
+    .search-input {
+        width: 100%;
+        padding: 1rem 1rem 1rem 3rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: var(--card-color);
+        color: var(--text-color);
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(42, 157, 143, 0.1);
+    }
+
+    /* Hide the default dropdown arrow for datalist */
+    input::-webkit-calendar-picker-indicator {
+        opacity: 0;
+    }
+        
     </style>
 </head>
 <body>
+    <div class="theme-toggle" onclick="toggleTheme()">
+        <i class="fas fa-sun"></i>
+    </div>
+    <div class="temperature-widget">
+        <div id="temperature" class="temperature-value">
+            <i class="fas fa-temperature-half"></i>
+            <span>--°</span>
+        </div>
+    </div>
+    
     <div class="header">
-        <h1>Campus Navigator</h1>
-        <p>Find your way around campus with our interactive map</p>
+        <h1>NavRIT</h1>
+        <p>Navigate through RIT campus with our interactive map</p>
     </div>
 
     <div class="content-wrapper">
@@ -201,33 +385,37 @@
             <div class="input-group">
                 <label for="start-room">Current Location</label>
                 <i class="fas fa-map-marker-alt"></i>
-                <select id="start-room">
-                    <option value="">Select Starting Room</option>
-                    <option value="G01">G01 - Main Entrance</option>
-                    <option value="G02">G02 - Reception</option>
-                    <option value="G03">G03 - Cafeteria</option>
-                    <option value="G04">G04 - Library</option>
-                    <option value="101">101 - Computer Lab</option>
-                    <option value="102">102 - Physics Lab</option>
-                    <option value="103">103 - Chemistry Lab</option>
-                    <option value="104">104 - Classroom</option>
-                </select>
+                <div class="search-select-container">
+                    <input 
+                        list="rooms-list" 
+                        id="start-room" 
+                        class="search-input" 
+                        placeholder="Search or select starting room"
+                        autocomplete="off">
+                    <datalist id="rooms-list">
+                        <option value="G01" label="G01 - Main Entrance">
+                        <option value="G02" label="G02 - Reception">
+                        <option value="G03" label="G03 - Cafeteria">
+                        <option value="G04" label="G04 - Library">
+                        <option value="101" label="101 - Computer Lab">
+                        <option value="102" label="102 - Physics Lab">
+                        <option value="103" label="103 - Chemistry Lab">
+                        <option value="104" label="104 - Classroom">
+                    </datalist>
+                </div>
             </div>
-
+            
             <div class="input-group">
                 <label for="end-room">Destination</label>
                 <i class="fas fa-location-dot"></i>
-                <select id="end-room">
-                    <option value="">Select Destination Room</option>
-                    <option value="G01">G01 - Main Entrance</option>
-                    <option value="G02">G02 - Reception</option>
-                    <option value="G03">G03 - Cafeteria</option>
-                    <option value="G04">G04 - Library</option>
-                    <option value="101">101 - Computer Lab</option>
-                    <option value="102">102 - Physics Lab</option>
-                    <option value="103">103 - Chemistry Lab</option>
-                    <option value="104">104 - Classroom</option>
-                </select>
+                <div class="search-select-container">
+                    <input 
+                        list="rooms-list" 
+                        id="end-room" 
+                        class="search-input" 
+                        placeholder="Search or select destination"
+                        autocomplete="off">
+                </div>
             </div>
 
             <button onclick="getDirections()">
@@ -243,160 +431,300 @@
         </div>
 
         <div class="map-container">
-            <svg class="map-svg" viewBox="0 0 600 500">
-                <g id="paths"></g>
-                <g id="rooms"></g>
-                <g id="labels"></g>
-                <g id="highlighted-path"></g>
-            </svg>
-            <div class="legend">
-                <div class="legend-item">
-                    <div class="legend-color" style="background-color: #ccc;"></div>
-                    <span>Available Path</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background-color: var(--accent-color);"></div>
-                    <span>Selected Route</span>
-                </div>
-            </div>
+            <svg class="map-svg" viewBox="0 0 600 500"></svg>
         </div>
     </div>
 
     <script>
-        function drawMap(data) {
-            const pathsGroup = document.getElementById('paths');
-            const roomsGroup = document.getElementById('rooms');
-            const labelsGroup = document.getElementById('labels');
-            const highlightedGroup = document.getElementById('highlighted-path');
-            
-            // Clear previous content
-            pathsGroup.innerHTML = '';
-            roomsGroup.innerHTML = '';
-            labelsGroup.innerHTML = '';
-            highlightedGroup.innerHTML = '';
+       const SVG_NS = "http://www.w3.org/2000/svg";
 
-            // Draw all paths
-            data.all_paths.forEach(([start, end]) => {
-                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-                line.setAttribute('x1', start.x);
-                line.setAttribute('y1', start.y);
-                line.setAttribute('x2', end.x);
-                line.setAttribute('y2', end.y);
-                line.setAttribute('class', 'path-line');
-                pathsGroup.appendChild(line);
-            });
+// Updated stairs icon path data (simple, cute stairs icon)
+const STAIRS_ICON_PATH = "M2 10 L4 10 L4 8 L6 8 L6 6 L8 6 L8 4 L10 4";
 
-            // Draw highlighted path
-            if (data.path) {
-                for (let i = 0; i < data.path.length - 1; i++) {
-                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-                    line.setAttribute('x1', data.path[i].x);
-                    line.setAttribute('y1', data.path[i].y);
-                    line.setAttribute('x2', data.path[i + 1].x);
-                    line.setAttribute('y2', data.path[i + 1].y);
-                    line.setAttribute('class', 'highlighted-path');
-                    highlightedGroup.appendChild(line);
-                }
-            }
-
-            // Draw all rooms
-            data.all_rooms.forEach(room => {
-                // Draw room node
-                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-                circle.setAttribute('cx', room.x);
-                circle.setAttribute('cy', room.y);
-                circle.setAttribute('class', 'room-node');
-                circle.setAttribute('data-room-id', room.id);
-                roomsGroup.appendChild(circle);
-
-                // Add room label
-                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-                text.setAttribute('x', room.x + 15);
-                text.setAttribute('y', room.y + 5);
-                text.setAttribute('class', 'room-label');
-                text.textContent = `${room.id} - ${room.description}`;
-                labelsGroup.appendChild(text);
-            });
-
-            // Add hover effects for rooms
-            const rooms = document.querySelectorAll('.room-node');
-            rooms.forEach(room => {
-                room.addEventListener('mouseover', () => {
-                    const roomId = room.getAttribute('data-room-id');
-                    const label = document.querySelector(`text:contains('${roomId}')`);
-                    if (label) {
-                        label.style.fontWeight = 'bold';
+// Function to create the stairs icon
+function createStairsIcon(x1, y1, x2, y2) {
+    const group = document.createElementNS(SVG_NS, 'g');
+    const midX = (x1 + x2) / 2;
+    const midY = (y1 + y2) / 2;
+    
+    const path = document.createElementNS(SVG_NS, 'path');
+    path.setAttribute('d', STAIRS_ICON_PATH);
+    path.setAttribute('class', 'stairs-icon');
+    path.setAttribute('transform', `translate(${midX-4},${midY-4}) scale(1)`); // Adjust size and position
+    
+    group.appendChild(path);
+    return group;
+}
+function fetchTemperature() {
+            console.log('Calling fetchTemperature...');
+            fetch('/get_temperature')
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Temperature data:', data);
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
+                    const tempSpan = document.querySelector('#temperature span');
+                    if (tempSpan) {
+                        tempSpan.textContent = `${data.temperature}${data.unit}`;
+                    } else {
+                        console.error('Temperature span not found');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching temperature:', error);
+                    const tempSpan = document.querySelector('#temperature span');
+                    if (tempSpan) {
+                        tempSpan.textContent = '--°';
                     }
                 });
-                room.addEventListener('mouseout', () => {
-                    const roomId = room.getAttribute('data-room-id');
-                    const label = document.querySelector(`text:contains('${roomId}')`);
-                    if (label) {
-                        label.style.fontWeight = 'normal';
-                    }
-                });
-            });
         }
 
-        // Function to update directions text
+// Fetch temperature data on page load
+function initializeApp() {
+            console.log('Initializing app...');
+            
+            // Fetch initial temperature
+            fetchTemperature();
+            
+            // Set up temperature refresh interval
+            setInterval(fetchTemperature, 300000); // Refresh every 5 minutes
+            
+            // Check for initial directions
+            const startRoom = document.getElementById('start-room');
+            const endRoom = document.getElementById('end-room');
+            if (startRoom && endRoom && startRoom.value && endRoom.value) {
+                getDirections();
+            }
+        }
+    document.addEventListener('DOMContentLoaded', initializeApp);
+
+
+
+
+
+function toggleTheme() {
+    const html = document.documentElement;
+    const themeToggle = document.querySelector('.theme-toggle i');
+    
+    if (html.getAttribute('data-theme') === 'dark') {
+        html.setAttribute('data-theme', 'light');
+        themeToggle.className = 'fas fa-sun';
+    } else {
+        html.setAttribute('data-theme', 'dark');
+        themeToggle.className = 'fas fa-moon';
+    }
+}
+
+
+function drawMap(data) {
+    const svg = d3.select('.map-svg');
+    svg.html(''); // Clear previous content
+
+    // Calculate the bounds of all points
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    
+    // Include all room coordinates
+    data.path.forEach(room => {
+        minX = Math.min(minX, room.x);
+        minY = Math.min(minY, room.y);
+        maxX = Math.max(maxX, room.x);
+        maxY = Math.max(maxY, room.y);
+    });
+
+    // Add padding (20% of the range)
+    const padding = {
+        x: (maxX - minX) * 0.2,
+        y: (maxY - minY) * 0.2
+    };
+
+    // Set minimum view area (adjust these values as needed)
+    const minWidth = 600;
+    const minHeight = 400;
+
+    // Calculate actual dimensions with padding
+    let width = Math.max(minWidth, (maxX - minX) + (padding.x * 2));
+    let height = Math.max(minHeight, (maxY - minY) + (padding.y * 2));
+
+    // Center the content if the minimum dimensions are used
+    const xOffset = (width - (maxX - minX)) / 2;
+    const yOffset = (height - (maxY - minY)) / 2;
+
+    // Update viewBox to fit all points with padding and minimum dimensions
+    const viewBox = [
+        minX - xOffset,
+        minY - yOffset,
+        width,
+        height
+    ].join(' ');
+    
+    svg.attr('viewBox', viewBox)
+       .attr('preserveAspectRatio', 'xMidYMid meet');
+
+    // Define the clip path
+    svg.append('defs')
+        .append('clipPath')
+        .attr('id', 'clip')
+        .append('rect')
+        .attr('x', minX - xOffset)
+        .attr('y', minY - yOffset)
+        .attr('width', width)
+        .attr('height', height);
+
+    // Add zoom and pan functionality
+    const zoom = d3.zoom()
+        .scaleExtent([0.5, 8])
+        .on('zoom', (event) => {
+            g.attr('transform', event.transform);
+        });
+
+    svg.call(zoom);
+    
+    // Create groups with clipping path
+    const g = svg.append('g').attr('clip-path', 'url(#clip)');
+
+    // Draw paths
+    data.relevant_paths.forEach(({start, end, type}) => {
+        g.append('line')
+            .attr('x1', start.x)
+            .attr('y1', start.y)
+            .attr('x2', end.x)
+            .attr('y2', end.y)
+            .attr('class', 'path-line');
+
+        if (type === 'stairs') {
+            g.append(() => createStairsIcon(start.x, start.y, end.x, end.y));
+        }
+    });
+
+    // Draw rooms and labels
+    data.path.forEach(room => {
+        g.append('circle')
+            .attr('cx', room.x)
+            .attr('cy', room.y)
+            .attr('class', 'room-node active');
+
+        g.append('text')
+            .attr('x', room.x + 15)
+            .attr('y', room.y + 5)
+            .attr('class', 'room-label active')
+            .text(`${room.id} - ${room.description}`);
+    });
+
+    // Initial zoom to fit content
+    const initialTransform = d3.zoomIdentity
+        .translate(0, 0)
+        .scale(1);
+    svg.call(zoom.transform, initialTransform);
+}
+
         function updateDirections(directions) {
             const directionsDiv = document.getElementById('directions');
             if (directions && directions.length > 0) {
-                const directionsList = directions.map((step, index) => `
-                    <div class="direction-step">
-                        <div class="step-number">${index + 1}</div>
-                        <div>${step}</div>
-                    </div>
-                `).join('');
+                const directionsList = directions.map((step, index) => {
+                    let iconClass = 'fa-person-walking';
+                    if (step.toLowerCase().includes('stairs')) {
+                        iconClass = 'fa-stairs';
+                    }
+                    
+                    return `
+                        <div class="direction-step">
+                            <div class="step-number">${index + 1}</div>
+                            <i class="fas ${iconClass} step-icon"></i>
+                            <div>${step}</div>
+                        </div>
+                    `;
+                }).join('');
                 directionsDiv.innerHTML = directionsList;
             } else {
                 directionsDiv.innerHTML = 'Select your current location and destination to get directions.';
             }
         }
 
-        // Main function to get directions and update the map
         function getDirections() {
-            const startRoom = document.getElementById('start-room').value;
-            const endRoom = document.getElementById('end-room').value;
-            
-            if (!startRoom || !endRoom) {
-                alert('Please select both rooms');
-                return;
-            }
-            
-            fetch('/get_directions', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    start: startRoom,
-                    end: endRoom
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    document.getElementById('directions').innerHTML = data.error;
-                    return;
-                }
-                
-                // Draw the map with the new path
-                drawMap(data);
-                // Update the text directions
-                updateDirections(data.directions);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                document.getElementById('directions').innerHTML = 
-                    'Error getting directions. Please try again.';
-            });
+    const startRoom = document.getElementById('start-room');
+    const endRoom = document.getElementById('end-room');
+    
+    if (!startRoom.value || !endRoom.value) {
+        alert('Please select both rooms');
+        return;
+    }
+    
+    if (!validateRoom(startRoom) || !validateRoom(endRoom)) {
+        alert('Please select valid rooms from the list');
+        return;
+    }
+    
+    fetch('/get_directions', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            start: startRoom.value,
+            end: endRoom.value
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            document.getElementById('directions').innerHTML = data.error;
+            return;
         }
+        drawMap(data);
+        updateDirections(data.directions);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('directions').innerHTML = 
+            'Error getting directions. Please try again.';
+    });
+}
 
-        // Initialize the map when the page loads
-        window.onload = function() {
-            getDirections();
-        };
+// Add input event listeners
+document.getElementById('start-room').addEventListener('change', function() {
+    validateRoom(this);
+});
+
+document.getElementById('end-room').addEventListener('change', function() {
+    validateRoom(this);
+});
+        // Room data for validation
+const validRooms = {
+    'G01': 'Main Entrance',
+    'G02': 'Reception',
+    'G03': 'Cafeteria',
+    'G04': 'Library',
+    '101': 'Computer Lab',
+    '102': 'Physics Lab',
+    '103': 'Chemistry Lab',
+    '104': 'Classroom'
+};
+
+function validateRoom(input) {
+    const value = input.value.trim().toUpperCase();
+    
+    // Check if the input matches any room ID
+    if (validRooms[value]) {
+        input.value = value;
+        return true;
+    }
+    
+    // Check if the input matches any room description
+    const matchingRoom = Object.entries(validRooms).find(([id, desc]) => 
+        desc.toLowerCase().includes(input.value.toLowerCase())
+    );
+    
+    if (matchingRoom) {
+        input.value = matchingRoom[0];
+        return true;
+    }
+    
+    return false;
+}
     </script>
 </body>
 </html>
